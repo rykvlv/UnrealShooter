@@ -4,10 +4,14 @@
 #include "Player/USBaseCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/USCharacterMovementComponent.h"
 
 // Sets default values
-AUSBaseCharacter::AUSBaseCharacter()
+AUSBaseCharacter::AUSBaseCharacter(const FObjectInitializer &ObjInit) 
+    : 
+    Super(ObjInit.SetDefaultSubobjectClass<UUSCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -18,6 +22,8 @@ AUSBaseCharacter::AUSBaseCharacter()
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComponent");
     CameraComponent->SetupAttachment(SpringArmComponent);
+
+
 }
 
 // Called when the game starts or when spawned
@@ -44,10 +50,13 @@ void AUSBaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("LookUp", this, &AUSBaseCharacter::LookUp);
 	PlayerInputComponent->BindAxis("TurnAround", this, &AUSBaseCharacter::TurnAround);
     PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AUSBaseCharacter::Jump);
+    PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AUSBaseCharacter::OnStartRunning);
+    PlayerInputComponent->BindAction("Run", IE_Released, this, &AUSBaseCharacter::OnStopRunning);
 }
 
 void AUSBaseCharacter::MoveForward(float Amount)
 {
+    IsMovingForward = Amount > 0.0f ? true : false;
     AddMovementInput(GetActorForwardVector(), Amount);
 }
 
@@ -64,4 +73,19 @@ void AUSBaseCharacter::LookUp(float Amount)
 void AUSBaseCharacter::TurnAround(float Amount)
 {
     AddControllerYawInput(Amount);
+}
+
+void AUSBaseCharacter::OnStartRunning()
+{
+    WantsToRun = true;
+}
+
+void AUSBaseCharacter::OnStopRunning()
+{
+    WantsToRun = false;
+}
+
+bool AUSBaseCharacter::IsRunning() const
+{
+    return WantsToRun && IsMovingForward && !GetVelocity().IsZero();
 }

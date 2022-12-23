@@ -8,6 +8,8 @@
 
 class UCameraComponent;
 class USpringArmComponent;
+class UUSHealthComponent;
+class UTextRenderComponent;
 
 UCLASS()
 class UNREALSHOOTER_API AUSBaseCharacter : public ACharacter
@@ -23,10 +25,16 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-    USpringArmComponent *SpringArmComponent;
+    USpringArmComponent* SpringArmComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-    UCameraComponent *CameraComponent;
+    UCameraComponent* CameraComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+    UUSHealthComponent* HealthComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+    UTextRenderComponent *HealthTextComponent;
 
 public:	
 	// Called every frame

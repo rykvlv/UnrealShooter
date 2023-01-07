@@ -10,6 +10,8 @@
 #include "Components/USHealthComponent.h"
 #include "Components/TextRenderComponent.h"
 
+DEFINE_LOG_CATEGORY_STATIC(LogBaseCharacter, All, All);
+
 // Sets default values
 AUSBaseCharacter::AUSBaseCharacter(const FObjectInitializer &ObjInit) 
     : 
@@ -35,16 +37,21 @@ AUSBaseCharacter::AUSBaseCharacter(const FObjectInitializer &ObjInit)
 void AUSBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+    check(HealthComponent);
+    check(HealthTextComponent);
+    check(GetCharacterMovement());
+
+    OnHealthChanged(HealthComponent->GetHealth());
+    HealthComponent->OnDeath.AddUObject(this, &AUSBaseCharacter::OnDeath);
+    HealthComponent->OnHealthChanged.AddUObject(this, &AUSBaseCharacter::OnHealthChanged);
 }
 
 // Called every frame
 void AUSBaseCharacter::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+    Super::Tick(DeltaTime);
 
-    const auto Health = HealthComponent->GetHealth();
-    HealthTextComponent->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), Health)));
 }
 
 // Called to bind functionality to input
@@ -107,4 +114,20 @@ float AUSBaseCharacter::GetMovementDirection() const
     const auto CrossProduct = FVector::CrossProduct(GetActorForwardVector(), VelocityNormal);
 
     return FMath::RadiansToDegrees(AngleBetween) * FMath::Sign(CrossProduct.Z);
+}
+
+void AUSBaseCharacter::OnDeath()
+{
+    UE_LOG(LogBaseCharacter, Display, TEXT("Player %s is dead"), *GetName());
+
+    PlayAnimMontage(DeathAnimMontage);
+
+    GetCharacterMovement()->DisableMovement();
+
+    SetLifeSpan(5.0f);
+}
+
+void AUSBaseCharacter::OnHealthChanged(float Health)
+{
+    HealthTextComponent->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), Health)));
 }

@@ -9,6 +9,7 @@
 #include "Components/USCharacterMovementComponent.h"
 #include "Components/USHealthComponent.h"
 #include "Components/TextRenderComponent.h"
+#include "GameFramework/Controller.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogBaseCharacter, All, All);
 
@@ -121,10 +122,13 @@ void AUSBaseCharacter::OnDeath()
     UE_LOG(LogBaseCharacter, Display, TEXT("Player %s is dead"), *GetName());
 
     PlayAnimMontage(DeathAnimMontage);
-
     GetCharacterMovement()->DisableMovement();
-
     SetLifeSpan(5.0f);
+
+    if (Controller)
+    {
+        Controller->ChangeState(NAME_Spectating);
+    }
 }
 
 void AUSBaseCharacter::OnHealthChanged(float Health)
